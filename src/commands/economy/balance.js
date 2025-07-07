@@ -26,7 +26,7 @@ module.exports = {
             .setColor("Blue")
             .addFields({
                 name: `**Dinero:**`,
-                value: `${result.newBalance.toLocaleString('es-AR')}`,
+                value: `${result.balance.toLocaleString('es-AR')}`,
             })
             .setAuthor({
                 name: `${user.username}`,
