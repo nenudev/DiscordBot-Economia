@@ -32,6 +32,80 @@ class EconomySystem {
             };
         }
     }
+
+    async addBalance(settings) {
+        await this.getUser(settings.userId);
+
+        const amount = parseInt(settings.amount) || 0;
+
+        if (amount <= 0) {
+            return {
+                error: true,
+                type: "invalid-amount",
+            };
+        }
+
+        try {
+            await UserCurrency.findOneAndUpdate(
+                { userId: settings.userId },
+                { $inc: { balance: amount } },
+                { new: true }
+            );
+
+            return {
+                error: false,
+                type: "success",
+            };
+
+        } catch (error) {
+            console.error("❌ Error interno:", error);
+            return {
+                error: true,
+                type: "database-error",
+            };
+        }
+    }
+
+    async removeBalance(settings) {
+        const user = await this.getUser(settings.userId);
+
+        const amount = parseInt(settings.amount) || 0;
+
+        if (amount <= 0) {
+            return {
+                error: true,
+                type: "invalid-amount",
+            };
+        }
+
+        try {
+            const updatedUser = await UserCurrency.findOneAndUpdate(
+                { userId: settings.userId, balance: { $gte: amount } },
+                { $inc: { balance: -amount } },
+                { new: true }
+            );
+
+            if (!updatedUser) {
+                return {
+                    error: true,
+                    type: "low-money",
+                    balance: user.balance
+                };
+            }
+
+            return {
+                error: false,
+                type: "success",
+            };
+
+        } catch (error) {
+            console.error("❌ Error interno:", error);
+            return {
+                error: true,
+                type: "database-error",
+            };
+        }
+    }
 }
 
 module.exports = EconomySystem;
